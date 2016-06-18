@@ -6,7 +6,7 @@ The JavaScript Speed Reader is a self-contained, single-file, easy-to-use speed 
 
 There is so much information that we must read each day, and the "to read" pile just keeps growing. And yet, our time is precious and valuable. The JavaScript Speed Reader is here to help!
 
-For a video introduction to the JavaScript Speed Reader, [click here](https://youtu.be/MdPaGncIUjg).
+For a video introduction to the JavaScript Speed Reader, **[click here](https://youtu.be/MdPaGncIUjg)**.
 
 ### Quick start
  
