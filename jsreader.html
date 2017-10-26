@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>JavaScript Speed Reader 0.30</title>
+     <script src='https://code.responsivevoice.org/responsivevoice.js'></script>
 <script type="text/javascript">
 
 /*!
@@ -309,6 +310,10 @@ var SpeedReader = (function()
         {
             // Display the word with its hightlight.
             outputTextElement.innerHTML = padAndHighlightWord(word);
+            
+            //text to speech 
+            responsiveVoice.speak("Hello World");
+           
 
             // Select the word in the text area.
             selectWordInTextArea(wordStart, textIndex);
