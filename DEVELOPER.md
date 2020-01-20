@@ -1,6 +1,6 @@
 # JavaScript Speed Reader 0.30 Developer Documentation
 
-The JavaScript Speed Reader is a well-documented, self-contained, single-file, easy-to-use speed reading program for use in HTML5 capable desktop browsers.
+The JavaScript Speed Reader is a well-documented, self-contained, single-file, easy-to-use, speed reading program for use in HTML5 capable desktop browsers.
 
 ## Design philosophy
 
@@ -67,7 +67,7 @@ If you want to contribute to this project, here are some features I want to add:
 
 What I want maintained in submitted changes:
 
-* Keep the structure of the file so that it's easy to read and understand. 
+* Keep the structure of the file so that it's easy to read and understand.
 * Keep this speed reader to a single file which would include all HTML, JavaScript, and CSS.
 * Clear and concise comments above each function to describe the summary of the function, the parameters, and return values.
 * Comments within each function to describe the actions of the function.
