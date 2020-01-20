@@ -8,7 +8,7 @@ There is so much information that we must read each day, and the "to read" pile 
 
 For a video introduction to the JavaScript Speed Reader, **[click here](https://youtu.be/MdPaGncIUjg)**.
 
-To try the JavaScript Speed Reader, click here: **[https://royha.github.io/jsreader](https://royha.github.io/jsreader)**.
+To try the JavaScript Speed Reader, click here: **[https://royha.github.io/jsreader/jsreader.html](https://royha.github.io/jsreader/jsreader.html)**.
 
 ### While playing
 
