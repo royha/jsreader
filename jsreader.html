@@ -7,7 +7,7 @@
 /*!
 The MIT License (MIT)
 
-Copyright (c) 2016 Roy Harper
+Copyright (c) 2016-2020 Roy Harper
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,11 @@ SOFTWARE.
 var SpeedReader = (function()
 {
     "use strict";
-    
+
     //////////
     // Variables.
     //////////
-    
+
     var text;                       // Stores the text the reader will use.
     var textIndex = 0;              // The current character within the text (text[textIndex]).
     var wordStart = 0;              // The start of the current word.
@@ -57,7 +57,7 @@ var SpeedReader = (function()
     var timeSpentPaused = 0;        // The time spent paused in milliseconds. Used to calculate the words per minute.
     var timeStartReading;           // The time when reading began in milliseconds from Jan 1, 1970. Used to calculate the words per minute.
     var wordCount = 0;              // The number of words that have been displayed. Used to calculate the words per minute.
-    
+
     var max_word_length = 13;       // Maximum word length to display. Longer words are hyphenated.
     var max_padding = 8;            // Maximum number of non-breaking spaces to add to the front of a displayed word.
     var max_speed = 2500;           // Arbitrary maximum number of words per minute to display.
@@ -69,7 +69,7 @@ var SpeedReader = (function()
     var consonantLowValue = "3";    // The lowest value for a consonant.
     var consonantHighValue = "4";   // The highest value for a consonant.
     var consonants;                 // List of consonants, created during initialization.
-    
+
     // Strings for the buttons.
     var startString = "\u25ba";
     var stopString = "\u25a0";
@@ -79,22 +79,22 @@ var SpeedReader = (function()
     var goForwardString = "\u25ba\u25ba";
     var goSlowerString = "\u25bc";
     var goFasterString = "\u25b2";
-    
-    // Letters, and their corresponding value scores, to use when choosing which letter will be the highlight 
-    // letter within a word. Typically, vowels score a 5, and consonants are a 3. The letter's value is 
+
+    // Letters, and their corresponding value scores, to use when choosing which letter will be the highlight
+    // letter within a word. Typically, vowels score a 5, and consonants are a 3. The letter's value is
     // multiplied by its position value within a word (highlightCurveValue[word.length][letterPosition]), and
     // the letter with the highest score becomes the highlighted letter. For example, for a four-letter word,
-    // word, the highlightCurveValue is "4973". Using the word "from", f=3*4=12, r=3*9=27 o=5*7=35 m=3*3=9, 
+    // word, the highlightCurveValue is "4973". Using the word "from", f=3*4=12, r=3*9=27 o=5*7=35 m=3*3=9,
     // the letter "o" has the highest score of 35 and becomes the highlighted letter.
- 
+
     // Basic Latin.
     var h01 = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./";
     var v01 = "354345333534434533444533343543453335344345334445333433111111111212";
-    
+
     // Yes, I know, this is not the most efficient way to create my lookup strings. I chose editability over
     // minification for the moment. Also, I had some issues with editors messing up these characters, so I
     // chose this way to preserve them.
-    
+
     // Latin-1 Supplement.
     var h02 = "\u00c0\u00c1\u00c2\u00c3\u00c4\u00c5\u00c6\u00c7\u00c8\u00c9\u00ca\u00cb\u00cc\u00cd\u00ce\u00cf";
     var v02 = "5555555355555555";
@@ -104,7 +104,7 @@ var SpeedReader = (function()
     var v04 = "5555555355555555";
     var h05 = "\u00f0\u00f1\u00f2\u00f3\u00f4\u00f5\u00f6\u00f7\u00f8\u00f9\u00fa\u00fb\u00fc\u00fd\u00fe\u00ff";
     var v05 = "3355555055555535";
-    
+
     // Latin Extended-A.
     var h06 = "\u0100\u0101\u0102\u0103\u0104\u0105\u0106\u0107\u0108\u0109\u010a\u010b\u010c\u010d\u010e\u010f";
     var v06 = "5555553333333333";
@@ -122,7 +122,7 @@ var SpeedReader = (function()
     var v12 = "3333333355555555";
     var h13 = "\u0170\u0171\u0172\u0173\u0174\u0175\u0176\u0177\u0178\u0179\u017a\u017b\u017c\u017d\u017e\u017f";
     var v13 = "5555335553333333";
-    
+
     // Latin Extended-B.
     var h14 = "\u0180\u0181\u0182\u0183\u0184\u0185\u0186\u0187\u0188\u0189\u018a\u018b\u018c\u018d\u018e\u018f";
     var v14 = "3333333333333355";
@@ -150,7 +150,7 @@ var SpeedReader = (function()
     var v25 = "5555333033533333";
     var h26 = "\u0240\u0241\u0242\u0243\u0244\u0245\u0246\u0247\u0248\u0249\u024a\u024b\u024c\u024d\u024e\u024f";
     var v26 = "3333535533333355";
-    
+
     // Latin Extended Additional.
     var h27 = "\u1e00\u1e01\u1e02\u1e03\u1e04\u1e05\u1e06\u1e07\u1e08\u1e09\u1e0a\u1e0b\u1e0c\u1e0d\u1e0e\u1e0f";
     var v27 = "5533333333333333";
@@ -184,7 +184,7 @@ var SpeedReader = (function()
     var v41 = "5555555555555555";
     var h42 = "\u1ef0\u1ef1\u1ef2\u1ef3\u1ef4\u1ef5\u1ef6\u1ef7\u1ef8\u1ef9\u1efa\u1efb\u1efc\u1efd\u1efe\u1eff";
     var v42 = "5555555555333355";
-    
+
     // Cyrillic.
     var h43 = "\u0400\u0401\u0402\u0403\u0404\u0405\u0406\u0407\u0408\u0409\u040a\u040b\u040c\u040d\u040e\u040f";
     var v43 = "5533535533333553";
@@ -218,7 +218,7 @@ var SpeedReader = (function()
     var v57 = "3355555555555555";
     var h58 = "\u04f0\u04f1\u04f2\u04f3\u04f4\u04f5\u04f6\u04f7\u04f8\u04f9\u04fa\u04fb\u04fc\u04fd\u04fe\u04ff";
     var v58 = "5555333355333333";
-    
+
     // Cyrillic Supplement.
     var h59 = "\u0500\u0501\u0502\u0503\u0504\u0505\u0506\u0507\u0508\u0509\u050a\u050b\u050c\u050d\u050e\u050f";
     var v59 = "3333333333333333";
@@ -226,7 +226,7 @@ var SpeedReader = (function()
     var v60 = "3333333355333333";
     var h61 = "\u0520\u0521\u0522\u0523\u0524\u0525\u0526\u0527";
     var v61 = "33333333";
-    
+
     var highlightLetters     = h01+h02+h03+h04+h05+h06+h07+h08+h09+h10+h11+h12+h13+h14+h15+h16+h17+h18+h19+h20+h21+h22+h23+h24+h25+h26+h27+h28+h29+h30+h31+h32+h33+h34+h35+h36+h37+h38+h39+h40+h41+h42+
                                h43+h44+h45+h46+h47+h48+h49+h50+h51+h52+h53+h54+h55+h56+h57+h58+h59+h60+h61;
     var highlightLetterValue = v01+v02+v03+v04+v05+v06+v07+v08+v09+v10+v11+v12+v13+v14+v15+v16+v17+v18+v19+v20+v21+v22+v23+v24+v25+v26+v27+v28+v29+v30+v31+v32+v33+v34+v35+v36+v37+v38+v39+v40+v41+v42+
@@ -251,17 +251,17 @@ var SpeedReader = (function()
     var hideButtonsCheckBox;    // The checkbox to also hide or unhide the control buttons while reading.
     var alsoTextSpan;           // The text span for the "Also hide buttons" text, to give it the appearance of being disabled.
     var inputTextAreaDiv;       // The div that contains the textarea and other elements to hide when reading.
-    var controlButtons;         // The div that contains the control buttons. Allows control buttons to be hidden while reading.  
+    var controlButtons;         // The div that contains the control buttons. Allows control buttons to be hidden while reading.
     var multiWordCheckBox;      // The checkbox to allow display of more than one word at a time.
     var wpmDisplay;             // The span to display the words per minute.
 
     //////////
     // Functions.
     //////////
-    
-    
+
+
     // Updates the word on the display with the next word.
-    
+
     var updateWord = function()
     {
         // Used to calculate how long the processing takes to obtain the word.
@@ -297,7 +297,7 @@ var SpeedReader = (function()
             setStopState();
         }
     };
-        
+
 
     // Displays the word on the screen, and selects the word in the textarea.
     // Param: word. The word to display on the screen. Used only to identify end of text to read.
@@ -315,7 +315,7 @@ var SpeedReader = (function()
 
             // Update the progress bar.
             updateProgressBar(textIndex, text.length);
-            
+
             // Display the words per minute.
             displayWordsPerMinute();
         }
@@ -370,10 +370,10 @@ var SpeedReader = (function()
         var divWidth = Math.floor((progress / limit) * progressBarBaseDiv.clientWidth);
         progressBarDiv.setAttribute("style", "width:" + divWidth + "px");
     };
-    
-    
+
+
     // Calculates and displays the current reading speed in words per minute.
-    
+
     var displayWordsPerMinute = function()
     {
         // Only display words per minute after 20 words (40 for multiWordDisplayhave been read.
@@ -381,10 +381,10 @@ var SpeedReader = (function()
         {
             // Calculate the time spent reading, without counting the time paused.
             var timeSpentReading = new Date().getTime() - timeStartReading - timeSpentPaused;
-            
+
             // Calculate the words per minute to the first decimal place.
             var wpm = Math.floor(wordCount * 1000 * 60 * 10 / timeSpentReading ) / 10;
-            
+
             // Display the words per minute.
             wpmDisplay.innerHTML = wpm;
         }
@@ -407,9 +407,9 @@ var SpeedReader = (function()
         }
 
         // Save the starting location of the word.
-        wordStart = textIndex; 
+        wordStart = textIndex;
 
-        
+
         // Search ahead to find the end of the word.
         --textIndex;
         do {
@@ -425,7 +425,7 @@ var SpeedReader = (function()
                     {
                         break;
                     }
-                    
+
                     if (multiWordDisplay && firstWordFound === false)
                     {
                         ++wordCount;
@@ -457,7 +457,7 @@ var SpeedReader = (function()
             }
         }
         while (textIndex < text.length && textIndex - wordStart < max_word_length);
-        
+
         // If the second word was too long, return only the first word.
         if (firstWordFound)
         {
@@ -475,16 +475,16 @@ var SpeedReader = (function()
         // The word is longer than max_word_length. Choose a subset of the current word.
         return hyphenateWord();
     }
-    
-    
+
+
     // Hyphenate the word at text[wordStart] through text[textIndex].
     // Returns the first part of the hyphenated word, with the hyphen.
-    
+
     var hyphenateWord = function()
     {
         var returnString;
         var i, i2;
-        
+
         // Find the end of this word, or another max_word_length - 1 characters.
         var longWordEnd = textIndex + 1;
         while (longWordEnd < text.length &&
@@ -503,20 +503,20 @@ var SpeedReader = (function()
             if (text[wordStart + i].toLowerCase() === text[wordStart + i] && text[wordStart + i + 1].toUpperCase() === text[wordStart + i + 1])
             {
                 // This is a CamelCase word. Hyphenate on the upper case letter.
-                
+
                 // Look backward and forward from the middle of the word to find a place to hyphenate.
                 for (i2 = 0; wordMiddle - i2 > wordStart + 2; ++i2)
                 {
-                    if (wordMiddle + i2 + 1 < textIndex && 
-                        text[wordMiddle + i2].toLowerCase() === text[wordMiddle + i2] && 
+                    if (wordMiddle + i2 + 1 < textIndex &&
+                        text[wordMiddle + i2].toLowerCase() === text[wordMiddle + i2] &&
                         text[wordMiddle + i2 + 1].toUpperCase() === text[wordMiddle + i2 + 1])
                     {
                       textIndex = wordMiddle + i2 + 1;
                       returnString = text.substr(wordStart, textIndex - wordStart) + "-";
                       return returnString;
                     }
-                    
-                    if (text[wordMiddle - i2].toLowerCase() === text[wordMiddle - i2] && 
+
+                    if (text[wordMiddle - i2].toLowerCase() === text[wordMiddle - i2] &&
                         text[wordMiddle - i2 - 1].toUpperCase() === text[wordMiddle - i2 - 1])
                     {
                       textIndex = wordMiddle - i2 - 1;
@@ -526,7 +526,7 @@ var SpeedReader = (function()
                 }
             }
         }
-        
+
         // Look backward and forward from the middle of the word to find a place to hyphenate.
         for (i = 0; wordMiddle - i > wordStart + 2; ++i)
         {
@@ -553,19 +553,19 @@ var SpeedReader = (function()
     };
 
 
-    // Adds spaces to the beginning of the word to align the letter highlight, and a span element 
-    // to color the highlighted character. 
+    // Adds spaces to the beginning of the word to align the letter highlight, and a span element
+    // to color the highlighted character.
     //
     // For example, 'reading' becomes '&nbsp;&nbsp;&nbsp;&nbsp;re<span class="highlight">a</span>ding'
     //
     // Param: word. The word to process.
-    // Returns the padded and highlighted word. The return value of this function is set to the 
+    // Returns the padded and highlighted word. The return value of this function is set to the
     // innerHTML of the outputTextElement.
 
     var padAndHighlightWord = function(word)
     {
         var i;
-        
+
         // Find the highlighted character.
         var highlightIndex = getHighlightIndex(word);
 
@@ -578,7 +578,7 @@ var SpeedReader = (function()
 
         // Add spaces to the beginning of the word to put the highlight in the correct place
         var padding = "";
-        
+
         for (i = 0; i < max_padding - highlightIndex; ++i)
         {
             padding = "&nbsp;" + padding;
@@ -590,15 +590,15 @@ var SpeedReader = (function()
 
 
     // Finds the index of the letter to highlight.
-    // Calculates based on letter value (vowels are higher than consonants) times the curve 
+    // Calculates based on letter value (vowels are higher than consonants) times the curve
     // for that word length (favors the location 1/3 of the way into the word).
     // This is intended to return the best focus point for the word.
     //
     // Param: word. The word upon which to determine the highlight index.
     // Returns the index of the letter to highlight.
     //
-    // Letters, and their corresponding value scores, to use when choosing which letter will be the highlight 
-    // letter within a word. Typically, vowels score a 5, and consonants are a 3. The letter's value is 
+    // Letters, and their corresponding value scores, to use when choosing which letter will be the highlight
+    // letter within a word. Typically, vowels score a 5, and consonants are a 3. The letter's value is
     // multiplied by its position value within a word (highlightCurveValue[word.length][letterPosition]), and
     // the letter with the highest score becomes the highlighted letter. For example, for a four-letter word,
     // the highlightCurveValue is "4973". Using the word "from", f=3*4=12, r=3*9=27 o=5*7=35 m=3*3=9, the
@@ -610,7 +610,7 @@ var SpeedReader = (function()
         var maxScoreLocation = -1;
         var score;
         var i;
-        
+
         for (i = 0; i < word.length; ++i)
         {
             // Find the letter in the list of letters.
@@ -648,7 +648,7 @@ var SpeedReader = (function()
 
     var getScore = function(letter, index, wordLength)
     {
-        // Find the letter in the list of letters. 
+        // Find the letter in the list of letters.
         var letterIndex = highlightLetters.indexOf(letter.toLowerCase());
         if (letterIndex > -1)
         {
@@ -696,7 +696,7 @@ var SpeedReader = (function()
 
         // Stop the reader if it is paused.
         stopReader();
-        
+
         text = inputTextArea.value;
         multiWordDisplay = multiWordCheckBox.checked;
 
@@ -708,11 +708,11 @@ var SpeedReader = (function()
         //                 0.10:                0.6,                 2.0
         //                 0.15:                0.4,                 2.5
         //                 0.20:                0.2,                 3.0
-        
+
         timerDelay = Math.floor(60000 / speedInputElement.value);
         timerDelaySlope = multiWordDisplay ? timerDelaySlopeMulti : timerDelaySlopeSingle;
         timerDelayOffset = timerDelaySlope * (-5) + 1;
-        
+
         // Set the values to start playing the reader.
         isPlaying = true;
         hideControls();
@@ -739,7 +739,7 @@ var SpeedReader = (function()
         inputTextArea.setSelectionRange(0, 0);
 
         setStopState();
-        
+
         // Clear the displayed word.
         outputTextElement.innerHTML = "&nbsp;";
     };
@@ -757,22 +757,22 @@ var SpeedReader = (function()
         // Set the playing and pausing flags.
         isPlaying = false;
         isPaused = false;
-        
+
         // Unhide all the controls.
         setVisibilityCheckboxes();
         showControls();
-        
+
         // Set the textarea and the words per minute textbox to read-only.
         inputTextArea.readOnly = false;
         inputTextArea.className = "UIInput";
         speedInputElement.readOnly = false;
         speedInputElement.className = "UIInput";
-        
+
         // Set the values to the beginning of the text.
         textIndex = 0;
         wordStart = 0;
         updateProgressBar(0, 100);
-        
+
         // Set the text of the buttons to the stopped state.
         pauseResumeButton.value = pauseString;
         startStopButton.value = startString;
@@ -797,8 +797,8 @@ var SpeedReader = (function()
                 multiWordDisplay = multiWordCheckBox.checked;
                 timerDelaySlope = multiWordDisplay ? timerDelaySlopeMulti : timerDelaySlopeSingle;
                 timeSpentPaused += new Date().getTime() - timeStartPause;
-                
-                // Immediately display the next word. 
+
+                // Immediately display the next word.
                 wordUpdateTimer = setTimeout(function () { updateWord(); }, 0);
             }
             else
@@ -813,30 +813,30 @@ var SpeedReader = (function()
             }
         }
     };
-    
-    
+
+
     // Shows the text area and control buttons.
-    
+
     var showControls = function()
     {
         // Set the flags.
         isTextAreaHidden = false;
         areButtonsHidden = false;
-        
+
         // Change the visibility of the controls.
         inputTextAreaDiv.style.visibility = "visible";
         controlButtons.style.visibility = "visible";
     }
-    
-    
+
+
     // Hides the text area and control buttons according to the users settings.
-    
+
     var hideControls = function()
     {
         // Set the flags.
         isTextAreaHidden = hideTextAreaCheckBox.checked;
         areButtonsHidden = (isTextAreaHidden) ? hideButtonsCheckBox.checked : false;
-        
+
         // Change the visibility of the controls.
         if (isPlaying && !isPaused)
         {
@@ -857,7 +857,7 @@ var SpeedReader = (function()
         speed = (speed > max_speed) ? max_speed : speed;
         speedInputElement.value = speed;
         timerDelay = Math.floor(60000 / speed);
-        
+
         // If the reader is paused, reselect the word in the text area.
         if (isPaused)
         {
@@ -878,7 +878,7 @@ var SpeedReader = (function()
         speed = (speed < min_speed) ? min_speed : speed;
         speedInputElement.value = speed;
         timerDelay = Math.floor(60000 / speed);
-        
+
         // If the reader is paused, reselect the word in the text area.
         if (isPaused)
         {
@@ -987,19 +987,19 @@ var SpeedReader = (function()
             }
         }
     };
-    
-    
+
+
     // Handles the check and uncheck events for the Hide text area checkbox.
-    
+
     var hideTextAreaOnChange = function(event)
     {
         setVisibilityCheckboxes();
         hideControls();
     }
-    
-    
+
+
     // Disables and enables the "Also hide buttons" checkbox and label text.
-    
+
     var setVisibilityCheckboxes = function()
     {
         // Check if the hide text area checkbox is checked.
@@ -1016,16 +1016,16 @@ var SpeedReader = (function()
             alsoTextSpan.className = "UIDisabledText";
         }
     }
-    
-    
+
+
     // Handles the check and uncheck events for the multi word checkbox.
-    
+
     var multiWordCheckBoxOnChange = function(event)
     {
         multiWordDisplay = multiWordCheckBox.checked;
     }
-    
-    
+
+
     // Suppresses specific keyboard input in the textarea and speed input elements while paused.
     // Allows keys to be used while maintaining the selection in the text area.
 
@@ -1065,7 +1065,7 @@ var SpeedReader = (function()
             case 27:
                 stopReader();
                 break;
-                
+
             case 32: // Spacebar.
                 if (textIndex !== 0)
                 {
@@ -1093,7 +1093,7 @@ var SpeedReader = (function()
                 slowerReader();
                 break;
             }
-            
+
             // Prevent these keys from affecting the display.
             if (event.keyCode === 27 || event.keyCode === 32 || event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 39 || event.keyCode === 40)
             {
@@ -1105,9 +1105,9 @@ var SpeedReader = (function()
         }
     };
 
-    
+
     // Initializes the speed reader.
-    
+
     var init = function()
     {
         // Create variables for the elements this program accesses.
@@ -1131,10 +1131,10 @@ var SpeedReader = (function()
         controlButtons          = document.getElementById("controlButtons");
         multiWordCheckBox       = document.getElementById("multiWordCheckBox");
         wpmDisplay              = document.getElementById("wpmDisplay");
-       
+
         // Add event handlers
-        if (document.addEventListener) 
-        {  
+        if (document.addEventListener)
+        {
             // Works with all browsers except IE before version 9.
             document.addEventListener("keydown", keydownInput, false);
             document.addEventListener("keypress", keypressInput, false);
@@ -1147,11 +1147,11 @@ var SpeedReader = (function()
             hideTextAreaCheckBox.addEventListener("change", hideTextAreaOnChange, false);
             multiWordCheckBox.addEventListener("change", multiWordCheckBoxOnChange, false);
         }
-        else 
+        else
         {
             // IE before version 9.
-            if (document.attachEvent) 
-            {   
+            if (document.attachEvent)
+            {
                 document.attachEvent("keydown", keydownInput);
                 document.attachEvent("keypress", keypressInput);
                 startStopButton.attachEvent("click", startStopReader);
@@ -1164,7 +1164,7 @@ var SpeedReader = (function()
                 multiWordCheckBox.attachEvent("change", multiWordCheckBoxOnChange);
             }
         }
-        
+
         // Create a list of consonants for use in hyphenating.
         var i = 0;
         consonants = "";
@@ -1175,17 +1175,17 @@ var SpeedReader = (function()
                 consonants += highlightLetters[i];
             }
         }
-        
+
         // Set this flag if the app is running in Firefox.
         isInFirefox = (navigator.userAgent.toLowerCase().indexOf('firefox') > -1);
-        
+
         setStopState();
     };
 
-        
+
     return {
         // Declare public members.
-        
+
         init:                   init,
         keydownInput:           keydownInput,
         keypressInput:          keypressInput,
@@ -1195,7 +1195,7 @@ var SpeedReader = (function()
         goForwardReader:        goForwardReader,
         slowerReader:           slowerReader,
         fasterReader:           fasterReader,
-        
+
         highlightCurveValue:    highlightCurveValue,
         highlightLetters:       highlightLetters,
         highlightLetterValue:   highlightLetterValue,
@@ -1203,7 +1203,7 @@ var SpeedReader = (function()
         startReader:            startReader,
         getScore:               getScore,
         padAndHighlightWord:    padAndHighlightWord
-        
+
     };
 })();
 
@@ -1238,19 +1238,19 @@ body
   padding:4px;
 }
 
-#outputTextElement 
-{ 
-  text-align:left; 
-  font-size:42px; 
+#outputTextElement
+{
+  text-align:left;
+  font-size:42px;
   font-family:monospace;
   color:#000000; /* Uncomment for black text on white background */
   /* color:white; /* Uncomment for white text on black background */
 }
 
 .outputText
-{ 
-  text-align:left; 
-  font-size:42px; 
+{
+  text-align:left;
+  font-size:42px;
   font-family:monospace;
   color:#000000; /* Uncomment for black text on white background */
   /* color:white; /* Uncomment for white text on black background */
@@ -1286,8 +1286,8 @@ body
 .controlButton
 {
   margin: 0px 6px 0px 6px;
-  text-align:center; 
-  font-size:32px; 
+  text-align:center;
+  font-size:32px;
   font-family:monospace;
 }
 
