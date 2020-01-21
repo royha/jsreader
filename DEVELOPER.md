@@ -2,9 +2,11 @@
 
 The JavaScript Speed Reader is a well-documented, self-contained, single-file, easy-to-use, speed reading program for use in HTML5 capable desktop browsers.
 
+To try the JavaScript Speed Reader, click here: **[http://bit.ly/jsreader](http://bit.ly/jsreader)**.
+
 ## Design philosophy
 
-The design of the JavaScript Speed Reader is to make it as easy to use as possible. To that end, all of the HTML, CSS, and JavaScript resides in a single, self-contained file. This allows the end user to easily drag-and-drop the app to their browser. The file, which is the complete application, can just as easily be copied to or from a flash drive or hard drive, emailed, or hosted on a website by copying that one, single file. This simplicity is one key to the JavaScript Speed Reader's ease of use.
+The design of the JavaScript Speed Reader is to make it as easy to use as possible. To that end, all of the HTML, CSS, and JavaScript resides in a single, self-contained file. The file, which is the complete application, can just as easily be copied to or from a flash drive or hard drive, emailed, or hosted on a website by copying that one, single file. This simplicity is one key to the JavaScript Speed Reader's ease of use.
 
 The other design philosophy of the JavaScript Speed Reader is to make the code easy to read and understand. Functions and variables are all extensively documented, and this document is designed to give a thorough overview of the code -- not just what is there, but how it works -- to make it easy for web designers and developers to understand and easily modify the JavaScript Speed Reader for whatever custom purpose they might desire.
 
