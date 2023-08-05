@@ -1216,8 +1216,8 @@ window.onload = SpeedReader.init;
 <style>
 body
 {
-  background-color:#FFFFFF; /* Uncomment for black text on white background */
-  /* background-color:#202020; /* Uncomment for white text on black background */
+  /* background-color:#FFFFFF; /* Uncomment for black text on white background */
+  background-color:#272727; /* Uncomment for white text on black background */
 }
 
 #mainDiv
@@ -1243,8 +1243,8 @@ body
   text-align:left;
   font-size:42px;
   font-family:monospace;
-  color:#000000; /* Uncomment for black text on white background */
-  /* color:white; /* Uncomment for white text on black background */
+  /* color:#000000; /* Uncomment for black text on white background */
+  color:white; /* Uncomment for white text on black background */
 }
 
 .outputText
@@ -1252,13 +1252,13 @@ body
   text-align:left;
   font-size:42px;
   font-family:monospace;
-  color:#000000; /* Uncomment for black text on white background */
-  /* color:white; /* Uncomment for white text on black background */
+  /* color:#000000; /* Uncomment for black text on white background */
+  color:white; /* Uncomment for white text on black background */
 }
 
 .highlight
 {
-  color:#ff3030;
+  color:#ff7030;
 }
 
 #progressBarBaseDiv
@@ -1307,7 +1307,8 @@ textarea
 
 .UIText
 {
-  color:#000000;
+  /* color:#000000; /* Uncomment for black text on white background */
+  color:#a0a0a0;    /* Uncomment for black text on white background */
 }
 
 .UIDisabledText
@@ -1366,7 +1367,7 @@ While reading, Spacebar pauses and resumes, Esc stops, Up Arrow increases the re
 
 <div id="speedAndCheckBoxesDiv">
 <span class="UIText">Speed <input type="text" id="speedInputElement" class="UIInput" size="5" value="250">
-<label><input type="checkbox" id="hideTextArea" checked>Hide text box when reading</label></span>
+<label><input type="checkbox" id="hideTextArea">Hide text box when reading</label></span>
 <span id="alsoTextSpan" class="UIDisabledText"><label><input type="checkbox" id="hideButtons" disabled>Also hide buttons</label></span>
 <span class="UIText"><label><input type="checkbox" id="multiWordCheckBox" checked>Display multiple words</label></span><br>
 <span class="UIText">Average words per minute: <span id="wpmDisplay"></span></span>
